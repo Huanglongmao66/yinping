@@ -18,6 +18,7 @@ public class Song {
     private byte[] albumArt;
     private Date addTime;
     private int playCount;
+    private double replayGain;
 
     public Song() {}
 
@@ -159,6 +160,14 @@ public class Song {
 
     public void setPlayCount(int playCount) {
         this.playCount = playCount;
+    }
+
+    public double getReplayGain() {
+        return replayGain;
+    }
+
+    public void setReplayGain(double replayGain) {
+        this.replayGain = replayGain;
     }
 
     @Override

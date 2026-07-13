@@ -17,6 +17,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.canvas.Canvas;
@@ -156,6 +158,19 @@ public class MainController {
                     historyService.addToHistory(newVal);
                     // Load lyrics
                     lyricsWindow.loadLyrics(newVal);
+                    // System notification
+                    if (java.awt.SystemTray.isSupported()) {
+                        try {
+                            java.awt.TrayIcon[] icons = java.awt.SystemTray.getSystemTray().getTrayIcons();
+                            if (icons.length > 0) {
+                                icons[0].displayMessage("正在播放", newVal.getDisplayTitle(), java.awt.TrayIcon.MessageType.INFO);
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    // Apply playback speed
+                    PlaybackSpeedService.getInstance().speedProperty().addListener((obs2, oldV, newV) -> {
+                        // Speed is applied when MediaPlayer is available
+                    });
                 } else {
                     songTitleLabel.setText("未播放");
                     songArtistLabel.setText("");
@@ -196,6 +211,37 @@ public class MainController {
         });
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> updateLibraryView());
+
+        // Drag and drop support
+        root.setOnDragOver(e -> {
+            if (e.getDragboard().hasFiles()) {
+                e.acceptTransferModes(TransferMode.COPY);
+            }
+            e.consume();
+        });
+        root.setOnDragDropped(e -> {
+            Dragboard db = e.getDragboard();
+            if (db.hasFiles()) {
+                List<Song> songs = new ArrayList<>();
+                for (File file : db.getFiles()) {
+                    if (file.isFile() && AudioUtils.isSupportedAudioFormat(file.getName())) {
+                        Song song = new Song();
+                        song.setId(java.util.UUID.randomUUID().toString());
+                        song.setFilePath(file.getAbsolutePath());
+                        song.setFileSize(file.length());
+                        song.setFormat(AudioUtils.getFileExtension(file.getName()));
+                        song.setTitle(file.getName().replaceAll("\\.[^.]+$", ""));
+                        songs.add(song);
+                    }
+                }
+                if (!songs.isEmpty()) {
+                    playlistService.addSongs(songs);
+                    updatePlaylistView();
+                }
+            }
+            e.setDropCompleted(true);
+            e.consume();
+        });
     }
 
     private void setupVisualizer() {
@@ -917,5 +963,204 @@ public class MainController {
                 DialogUtils.showError("启动失败", "无法启动远程控制服务器: " + e.getMessage());
             }
         }
+    }
+
+    // ===== V2 New Features =====
+
+    @FXML
+    public void onEffectPlugins() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/effect_plugin_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("音效插件");
+            stage.setScene(new Scene(view, 400, 380));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            loader.getController(); // initialize
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开音效插件窗口");
+        }
+    }
+
+    @FXML
+    public void onCrossfade() {
+        CrossfadeService crossfade = CrossfadeService.getInstance();
+        crossfade.setEnabled(!crossfade.isEnabled());
+        DialogUtils.showInfo("淡入淡出", "淡入淡出已" + (crossfade.isEnabled() ? "开启" : "关闭"));
+    }
+
+    @FXML
+    public void onPlaybackSpeed() {
+        PlaybackSpeedService speedService = PlaybackSpeedService.getInstance();
+        List<String> options = new ArrayList<>();
+        for (double s : speedService.getSpeedOptions()) {
+            options.add(String.format("%.2fx", s));
+        }
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(speedService.getSpeedDisplay(), options);
+        dialog.setTitle("变速播放");
+        dialog.setHeaderText(null);
+        dialog.setContentText("选择播放速度：");
+        dialog.showAndWait().ifPresent(choice -> {
+            double speed = Double.parseDouble(choice.replace("x", ""));
+            speedService.setSpeed(speed);
+        });
+    }
+
+    @FXML
+    public void onSetAPoint() {
+        long current = playerService.getCurrentTime();
+        ABLoopService.getInstance().setPointA(current);
+        DialogUtils.showInfo("A 点已设置", "A 点: " + formatMs(current));
+    }
+
+    @FXML
+    public void onSetBPoint() {
+        long current = playerService.getCurrentTime();
+        ABLoopService.getInstance().setPointB(current);
+        DialogUtils.showInfo("B 点已设置", ABLoopService.getInstance().getLoopInfo());
+    }
+
+    @FXML
+    public void onClearABLoop() {
+        ABLoopService.getInstance().clearLoop();
+        DialogUtils.showInfo("AB 循环", "AB 循环已清除");
+    }
+
+    @FXML
+    public void onReplayGain() {
+        DialogUtils.showInfo("音量均衡化", "正在分析音乐库，请稍候...");
+        new Thread(() -> {
+            ReplayGainUtil.normalizeLibrary();
+            Platform.runLater(() -> DialogUtils.showInfo("完成", "音量均衡化分析完成"));
+        }).start();
+    }
+
+    @FXML
+    public void onShowStatistics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/statistics_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("听歌统计");
+            stage.setScene(new Scene(view, 700, 500));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开统计窗口");
+        }
+    }
+
+    @FXML
+    public void onAudioSplit() {
+        Song song = playerService.getCurrentSong();
+        if (song == null) {
+            DialogUtils.showWarning("提示", "请先播放一首歌曲");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/audio_split_view.fxml"));
+            BorderPane view = loader.load();
+            AudioSplitController controller = loader.getController();
+            controller.setInputFile(song.getFilePath(), playerService.getDuration());
+            Stage stage = new Stage();
+            stage.setTitle("音频分割");
+            stage.setScene(new Scene(view, 550, 350));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            controller.setStage(stage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开音频分割窗口");
+        }
+    }
+
+    @FXML
+    public void onExportPlaylist() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("M3U 播放列表", "*.m3u"),
+            new FileChooser.ExtensionFilter("PLS 播放列表", "*.pls")
+        );
+        File file = chooser.showSaveDialog(primaryStage);
+        if (file == null) return;
+        try {
+            if (file.getName().endsWith(".m3u")) {
+                PlaylistIO.exportM3U(playlistService.getCurrentPlaylist(), file.getAbsolutePath());
+            } else {
+                PlaylistIO.exportPLS(playlistService.getCurrentPlaylist(), file.getAbsolutePath());
+            }
+            DialogUtils.showInfo("导出成功", "播放列表已导出到:\n" + file.getAbsolutePath());
+        } catch (Exception e) {
+            DialogUtils.showError("导出失败", e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onImportPlaylist() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("播放列表文件", "*.m3u", "*.pls")
+        );
+        File file = chooser.showOpenDialog(primaryStage);
+        if (file == null) return;
+        try {
+            List<String> paths;
+            if (file.getName().endsWith(".m3u")) {
+                paths = PlaylistIO.importM3U(file.getAbsolutePath());
+            } else {
+                paths = PlaylistIO.importPLS(file.getAbsolutePath());
+            }
+            for (String path : paths) {
+                File f = new File(path);
+                if (f.exists()) {
+                    Song song = new Song();
+                    song.setId(java.util.UUID.randomUUID().toString());
+                    song.setFilePath(f.getAbsolutePath());
+                    song.setFileSize(f.length());
+                    song.setTitle(f.getName().replaceAll("\\.[^.]+$", ""));
+                    playlistService.addSong(song);
+                }
+            }
+            updatePlaylistView();
+            DialogUtils.showInfo("导入成功", "已导入 " + paths.size() + " 首歌曲");
+        } catch (Exception e) {
+            DialogUtils.showError("导入失败", e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onCheckUpdate() {
+        DialogUtils.showInfo("检查更新", "正在检查更新...");
+        UpdateChecker.getInstance().checkForUpdates(new UpdateChecker.UpdateCallback() {
+            @Override public void onUpdateAvailable(String ver, String url, String notes) {
+                DialogUtils.showInfo("发现新版本", "最新版本: " + ver + "\n\n" + (notes != null ? notes : "") + "\n\n下载地址:\n" + url);
+            }
+            @Override public void onUpToDate() {
+                DialogUtils.showInfo("检查更新", "当前已是最新版本 v" + UpdateChecker.getInstance().getCurrentVersion());
+            }
+            @Override public void onError(String error) {
+                DialogUtils.showError("检查失败", "无法检查更新: " + error);
+            }
+        });
+    }
+
+    @FXML
+    public void onNewPlaylist() {
+        TextInputDialog dialog = new TextInputDialog("新播放列表");
+        dialog.setTitle("新建播放列表");
+        dialog.setHeaderText(null);
+        dialog.setContentText("播放列表名称：");
+        dialog.showAndWait().ifPresent(name -> {
+            playlistService.createPlaylist(name);
+            DialogUtils.showInfo("创建成功", "已创建播放列表: " + name);
+        });
+    }
+
+    private String formatMs(long ms) {
+        int sec = (int) (ms / 1000);
+        return String.format("%02d:%02d", sec / 60, sec % 60);
     }
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.AudioSplitController" styleClass="main-content">
+    <center>
+        <VBox spacing="12" style="-fx-padding: 20;">
+            <Label text="音频分割工具" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="文件:"/>
+                <Label fx:id="fileLabel" text="未选择"/>
+                <Label text="时长:"/>
+                <Label fx:id="durationLabel" text="00:00"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="起点:"/>
+                <Slider fx:id="startSlider" min="0" max="100" value="0" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="startLabel" text="00:00"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="终点:"/>
+                <Slider fx:id="endSlider" min="0" max="100" value="100" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="endLabel" text="00:00"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="输出:"/>
+                <TextField fx:id="outputPathField" HBox.hgrow="ALWAYS"/>
+                <Button text="浏览..." onAction="#onBrowseOutput"/>
+            </HBox>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button text="分割" onAction="#onSplit"/>
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.StatisticsController" styleClass="main-content">
+    <top>
+        <GridPane style="-fx-padding: 15;" hgap="20" vgap="8">
+            <Label text="总歌曲数:" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalSongsLabel" text="0" GridPane.columnIndex="1"/>
+            <Label text="艺术家数:" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalArtistsLabel" text="0" GridPane.columnIndex="3"/>
+            <Label text="专辑数:" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalAlbumsLabel" text="0" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="总播放次数:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalPlayCountLabel" text="0" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+            <Label text="总时长:" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalDurationLabel" text="00:00" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="总大小:" GridPane.rowIndex="2" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+            <Label fx:id="totalFileSizeLabel" text="0 B" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+        </GridPane>
+    </top>
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <Tab text="热门艺术家">
+                <ListView fx:id="topArtistsList"/>
+            </Tab>
+            <Tab text="热门歌曲">
+                <ListView fx:id="topSongsList"/>
+            </Tab>
+            <Tab text="格式分布">
+                <ListView fx:id="formatList"/>
+            </Tab>
+            <Tab text="时段分布">
+                <ListView fx:id="hourlyList"/>
+            </Tab>
+        </TabPane>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER_RIGHT">
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.EffectPluginController" styleClass="main-content">
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <CheckBox fx:id="reverbCheck" text="混响效果"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="混响混合:"/>
+                <Slider fx:id="reverbMixSlider" min="0" max="1" value="0.3" prefWidth="200"/>
+                <Label fx:id="reverbMixLabel" text="30%"/>
+            </HBox>
+            <Separator/>
+            <CheckBox fx:id="bassBoostCheck" text="低音增强"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="增益:"/>
+                <Slider fx:id="bassGainSlider" min="0" max="15" value="6" prefWidth="200"/>
+                <Label fx:id="bassGainLabel" text="6.0 dB"/>
+            </HBox>
+            <Separator/>
+            <CheckBox fx:id="surroundCheck" text="环绕声"/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button text="重置" onAction="#onReset"/>
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>
