@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.SettingsController">
+    <left>
+        <ListView fx:id="settingsListView" prefWidth="120"/>
+    </left>
+    
+    <center>
+        <TabPane fx:id="contentTabPane">
+            <Tab fx:id="generalTab" text="常规">
+                <VBox spacing="15" padding="20">
+                    <Label text="常规设置"/>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="playbackTab" text="播放">
+                <VBox spacing="15" padding="20">
+                    <Label text="播放设置"/>
+                    <HBox spacing="10">
+                        <Label text="默认音量"/>
+                        <Slider fx:id="volumeSlider" min="0" max="100" prefWidth="200"/>
+                    </HBox>
+                    <CheckBox fx:id="autoPlayCheckBox" text="自动播放"/>
+                    <CheckBox fx:id="crossfadeCheckBox" text="交叉淡入淡出"/>
+                    <HBox spacing="10">
+                        <Label text="淡入淡出时长（秒）"/>
+                        <Spinner fx:id="crossfadeDurationSpinner" prefWidth="80">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="10" initialValue="3"/>
+                            </valueFactory>
+                        </Spinner>
+                    </HBox>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="interfaceTab" text="界面">
+                <VBox spacing="15" padding="20">
+                    <Label text="界面设置"/>
+                    <HBox spacing="10">
+                        <Label text="主题"/>
+                        <ComboBox fx:id="themeComboBox"/>
+                    </HBox>
+                    <CheckBox fx:id="showLyricsCheckBox" text="显示歌词"/>
+                    <CheckBox fx:id="showVisualizerCheckBox" text="显示可视化效果"/>
+                    <HBox spacing="10">
+                        <Label text="字体大小"/>
+                        <Spinner fx:id="fontSizeSpinner" prefWidth="80">
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="10" initialValue="3"/>
+                            </valueFactory>
+                        </Spinner>
+                    </HBox>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="shortcutsTab" text="快捷键">
+                <VBox spacing="15" padding="20">
+                    <Label text="快捷键设置"/>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="libraryTab" text="音乐库">
+                <VBox spacing="15" padding="20">
+                    <Label text="音乐库设置"/>
+                    <CheckBox fx:id="autoScanCheckBox" text="自动扫描"/>
+                    <HBox spacing="10">
+                        <ListView fx:id="scanPathsListView" VBox.vgrow="ALWAYS" prefWidth="300" prefHeight="150"/>
+                        <VBox spacing="10">
+                            <Button fx:id="addPathButton" text="添加" onAction="#onAddPath"/>
+                            <Button fx:id="removePathButton" text="移除" onAction="#onRemovePath"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="advancedTab" text="高级">
+                <VBox spacing="15" padding="20">
+                    <Label text="高级设置"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+    
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" padding="10">
+            <Button fx:id="applyButton" text="应用" onAction="#onApply"/>
+            <Button fx:id="okButton" text="确定" onAction="#onOk"/>
+            <Button fx:id="cancelButton" text="取消" onAction="#onCancel"/>
+        </HBox>
+    </bottom>
+</BorderPane>

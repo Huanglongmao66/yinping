@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.Canvas?>
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.MainController">
+    <top>
+        <MenuBar fx:id="menuBar" styleClass="menu-bar">
+            <Menu text="文件">
+                <MenuItem text="打开文件" onAction="#onOpenFile"/>
+                <MenuItem text="打开文件夹" onAction="#onOpenFolder"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="退出" onAction="Platform.exit()"/>
+            </Menu>
+            <Menu text="编辑">
+                <MenuItem text="歌曲信息..." onAction="#onSongInfo"/>
+                <MenuItem text="设置..." onAction="#onSettings"/>
+            </Menu>
+            <Menu text="播放">
+                <MenuItem text="播放/暂停" onAction="#onPlay"/>
+                <MenuItem text="上一曲" onAction="#onPrevious"/>
+                <MenuItem text="下一曲" onAction="#onNext"/>
+                <MenuItem text="播放模式" onAction="#onTogglePlayMode"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="定时关闭..." onAction="#onSleepTimer"/>
+                <MenuItem text="均衡器" onAction="#onEqualizer"/>
+            </Menu>
+            <Menu text="视图">
+                <MenuItem text="迷你模式" onAction="#toggleMiniMode"/>
+                <MenuItem text="显示/隐藏播放列表" onAction="#onTogglePlaylist"/>
+            </Menu>
+            <Menu text="帮助">
+                <MenuItem text="关于" onAction="#onAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <left>
+        <VBox fx:id="playlistSidebar" prefWidth="200" styleClass="sidebar">
+            <Label text="播放列表" styleClass="sidebar-title"/>
+            <ListView fx:id="playlistListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="main-content">
+            <HBox>
+                <TextField fx:id="searchField" promptText="搜索歌曲..." HBox.hgrow="ALWAYS"/>
+                <Button text="专辑" onAction="#onNavAlbums"/>
+                <Button text="歌手" onAction="#onNavArtists"/>
+            </HBox>
+            <ListView fx:id="libraryListView" VBox.vgrow="ALWAYS"/>
+            <Canvas fx:id="visualizerCanvas" height="80" onMouseClicked="#onChangeVisualizerMode" styleClass="visualizer"/>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox styleClass="player-bar">
+            <HBox>
+                <Button fx:id="playButton" text="▶" onAction="#onPlay" styleClass="control-button"/>
+                <Button fx:id="pauseButton" text="⏸" onAction="#onPause" styleClass="control-button" visible="false"/>
+                <Button fx:id="stopButton" text="■" onAction="#onStop" styleClass="control-button"/>
+                <Button fx:id="previousButton" text="⏮" onAction="#onPrevious" styleClass="control-button"/>
+                <Button fx:id="nextButton" text="⏭" onAction="#onNext" styleClass="control-button"/>
+                
+                <Label fx:id="playModeLabel" text="列表循环" styleClass="play-mode-label"/>
+                
+                <Slider fx:id="progressSlider" min="0" max="100" value="0" HBox.hgrow="ALWAYS" styleClass="progress-slider"/>
+                
+                <Label fx:id="timeLabel" text="00:00" styleClass="time-label"/>
+                <Label text="/"/>
+                <Label fx:id="durationLabel" text="00:00" styleClass="time-label"/>
+                
+                <Slider fx:id="volumeSlider" min="0" max="100" value="70" prefWidth="100" styleClass="volume-slider"/>
+            </HBox>
+            
+            <HBox alignment="CENTER">
+                <Label fx:id="songTitleLabel" text="未播放" styleClass="song-title"/>
+                <Label fx:id="songArtistLabel" text="" styleClass="song-artist"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

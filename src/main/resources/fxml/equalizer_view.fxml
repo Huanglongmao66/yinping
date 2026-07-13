@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.EqualizerController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" padding="10">
+            <CheckBox fx:id="enableEqualizerCheckBox" text="启用均衡器" onAction="#onEnableEqualizer"/>
+            <ComboBox fx:id="presetComboBox" onAction="#onPresetChanged"/>
+            <Button fx:id="resetButton" text="重置" onAction="#onReset"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <HBox fx:id="bandsContainer" alignment="CENTER" spacing="5" padding="10"/>
+    </center>
+    
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" padding="10">
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>
