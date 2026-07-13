@@ -11,7 +11,7 @@
                 <MenuItem text="打开文件" onAction="#onOpenFile"/>
                 <MenuItem text="打开文件夹" onAction="#onOpenFolder"/>
                 <SeparatorMenuItem/>
-                <MenuItem text="退出" onAction="Platform.exit()"/>
+                <MenuItem text="退出" onAction="#onExit"/>
             </Menu>
             <Menu text="编辑">
                 <MenuItem text="歌曲信息..." onAction="#onSongInfo"/>

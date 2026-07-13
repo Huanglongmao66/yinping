@@ -538,6 +538,12 @@ public class MainController {
     }
 
     @FXML
+    public void onExit() {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    @FXML
     public void onSleepTimer() {
         List<String> options = List.of("15分钟", "30分钟", "45分钟", "60分钟", "90分钟", "取消");
         ChoiceDialog<String> dialog = new ChoiceDialog<>("30分钟", options);
