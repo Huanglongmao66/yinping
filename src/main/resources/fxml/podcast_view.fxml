@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.PodcastController" styleClass="main-content">
+    <top>
+        <HBox spacing="10" style="-fx-padding: 10;">
+            <TextField fx:id="feedNameField" promptText="播客名称" prefWidth="150"/>
+            <TextField fx:id="feedUrlField" promptText="RSS 订阅地址" HBox.hgrow="ALWAYS"/>
+            <Button text="添加订阅" onAction="#onAddFeed"/>
+            <Button text="刷新" onAction="#onRefresh"/>
+        </HBox>
+    </top>
+    <left>
+        <VBox prefWidth="200" styleClass="sidebar">
+            <Label text="播客订阅" styleClass="sidebar-title"/>
+            <ListView fx:id="feedListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+    <center>
+        <VBox styleClass="main-content">
+            <Label fx:id="episodeTitle" text="选择播客查看节目" styleClass="sidebar-title"/>
+            <ListView fx:id="episodeListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </center>
+</BorderPane>

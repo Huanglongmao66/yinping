@@ -1,0 +1,154 @@
+.root {
+    -fx-background-color: #0d1b2a;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+}
+
+.menu-bar {
+    -fx-background-color: #1b2838;
+    -fx-text-fill: #ffffff;
+}
+
+.menu-bar .menu .label {
+    -fx-text-fill: #e0e0e0;
+}
+
+.menu-bar .menu:hover {
+    -fx-background-color: #2a3f54;
+}
+
+.sidebar {
+    -fx-background-color: #1b2838;
+    -fx-border-color: #2a3f54;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-title {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 10 5 10;
+}
+
+.main-content {
+    -fx-background-color: #0d1b2a;
+}
+
+.player-bar {
+    -fx-background-color: #1b2838;
+    -fx-border-color: #2a3f54;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10;
+}
+
+.control-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 16px;
+    -fx-padding: 5 10;
+}
+
+.control-button:hover {
+    -fx-background-color: #2a3f54;
+    -fx-text-fill: #ffffff;
+}
+
+.progress-slider {
+    -fx-accent: #00b4d8;
+}
+
+.progress-slider .thumb {
+    -fx-background-color: #00b4d8;
+}
+
+.volume-slider {
+    -fx-accent: #00b4d8;
+}
+
+.volume-slider .thumb {
+    -fx-background-color: #00b4d8;
+}
+
+.time-label {
+    -fx-text-fill: #90e0ef;
+    -fx-font-size: 12px;
+}
+
+.song-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.song-artist {
+    -fx-text-fill: #90e0ef;
+    -fx-font-size: 12px;
+}
+
+.visualizer {
+    -fx-background-color: #1b2838;
+}
+
+.text-field {
+    -fx-background-color: #1b2838;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #2a3f54;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.button {
+    -fx-background-color: #0077b6;
+    -fx-text-fill: #ffffff;
+    -fx-border-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #00b4d8;
+}
+
+.list-view {
+    -fx-background-color: #0d1b2a;
+    -fx-border-color: #2a3f54;
+}
+
+.list-view .list-cell {
+    -fx-background-color: #0d1b2a;
+    -fx-text-fill: #e0e0e0;
+}
+
+.list-view .list-cell:hover {
+    -fx-background-color: #1b2838;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #0077b6;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #1b2838;
+    -fx-text-fill: #90e0ef;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #0d1b2a;
+    -fx-text-fill: #ffffff;
+}
+
+.label {
+    -fx-text-fill: #e0e0e0;
+}
+
+.dialog-pane {
+    -fx-background-color: #0d1b2a;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #0077b6;
+    -fx-text-fill: #ffffff;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #00b4d8;
+}

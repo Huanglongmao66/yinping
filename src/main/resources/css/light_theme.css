@@ -1,0 +1,170 @@
+.root {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: #333333;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+}
+
+.menu-bar {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #333333;
+}
+
+.menu-bar .menu .label {
+    -fx-text-fill: #333333;
+}
+
+.menu-bar .menu:hover {
+    -fx-background-color: #d0d0d0;
+}
+
+.sidebar {
+    -fx-background-color: #e8e8e8;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-title {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 10 5 10;
+}
+
+.main-content {
+    -fx-background-color: #f5f5f5;
+}
+
+.player-bar {
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10;
+}
+
+.control-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333;
+    -fx-font-size: 16px;
+    -fx-padding: 5 10;
+}
+
+.control-button:hover {
+    -fx-background-color: #d0d0d0;
+    -fx-text-fill: #000000;
+}
+
+.progress-slider {
+    -fx-accent: #2196F3;
+}
+
+.progress-slider .thumb {
+    -fx-background-color: #2196F3;
+}
+
+.volume-slider {
+    -fx-accent: #2196F3;
+}
+
+.volume-slider .thumb {
+    -fx-background-color: #2196F3;
+}
+
+.time-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 12px;
+}
+
+.song-title {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.song-artist {
+    -fx-text-fill: #666666;
+    -fx-font-size: 12px;
+}
+
+.visualizer {
+    -fx-background-color: #e8e8e8;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #333333;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: #ffffff;
+    -fx-border-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cccccc;
+}
+
+.list-view .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #333333;
+}
+
+.list-view .list-cell:hover {
+    -fx-background-color: #e3f2fd;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: #ffffff;
+}
+
+.check-box {
+    -fx-text-fill: #333333;
+}
+
+.combo-box {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #333333;
+    -fx-border-color: #cccccc;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #333333;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: #000000;
+}
+
+.label {
+    -fx-text-fill: #333333;
+}
+
+.text-area {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #333333;
+    -fx-border-color: #cccccc;
+}
+
+.dialog-pane {
+    -fx-background-color: #f5f5f5;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #333333;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: #ffffff;
+}

@@ -11,6 +11,9 @@
                 <MenuItem text="打开文件" onAction="#onOpenFile"/>
                 <MenuItem text="打开文件夹" onAction="#onOpenFolder"/>
                 <SeparatorMenuItem/>
+                <MenuItem text="导出配置..." onAction="#onExportConfig"/>
+                <MenuItem text="导入配置..." onAction="#onImportConfig"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="退出" onAction="#onExit"/>
             </Menu>
             <Menu text="编辑">
@@ -23,12 +26,21 @@
                 <MenuItem text="下一曲" onAction="#onNext"/>
                 <MenuItem text="播放模式" onAction="#onTogglePlayMode"/>
                 <SeparatorMenuItem/>
+                <MenuItem text="播放历史..." onAction="#onShowHistory"/>
+                <MenuItem text="迷你播放器" onAction="#onToggleMiniPlayer"/>
                 <MenuItem text="定时关闭..." onAction="#onSleepTimer"/>
                 <MenuItem text="均衡器" onAction="#onEqualizer"/>
             </Menu>
             <Menu text="视图">
                 <MenuItem text="迷你模式" onAction="#toggleMiniMode"/>
+                <MenuItem text="桌面歌词" onAction="#onToggleLyrics"/>
+                <MenuItem text="切换主题..." onAction="#onChangeTheme"/>
                 <MenuItem text="显示/隐藏播放列表" onAction="#onTogglePlaylist"/>
+            </Menu>
+            <Menu text="工具">
+                <MenuItem text="播客管理..." onAction="#onShowPodcasts"/>
+                <MenuItem text="音频格式转换..." onAction="#onFormatConvert"/>
+                <MenuItem text="备份数据..." onAction="#onBackup"/>
             </Menu>
             <Menu text="帮助">
                 <MenuItem text="关于" onAction="#onAbout"/>

@@ -1,38 +1,27 @@
 package com.yinyue.player.controller;
 
+import com.yinyue.player.model.HistoryEntry;
 import com.yinyue.player.model.PlayMode;
 import com.yinyue.player.model.Song;
-import com.yinyue.player.service.AudioEffectService;
-import com.yinyue.player.service.AudioPlayerService;
-import com.yinyue.player.service.LibraryService;
-import com.yinyue.player.service.PlaylistService;
-import com.yinyue.player.util.AudioUtils;
-import com.yinyue.player.util.ConfigManager;
-import com.yinyue.player.util.DialogUtils;
+import com.yinyue.player.service.*;
+import com.yinyue.player.ui.LyricsWindow;
+import com.yinyue.player.ui.MiniPlayer;
+import com.yinyue.player.util.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -42,72 +31,43 @@ import javafx.util.Duration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class MainController {
-    @FXML
-    private BorderPane root;
-
-    @FXML
-    private MenuBar menuBar;
-
-    @FXML
-    private ListView<String> playlistListView;
-
-    @FXML
-    private ListView<String> libraryListView;
-
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private Button playButton;
-
-    @FXML
-    private Button pauseButton;
-
-    @FXML
-    private Button stopButton;
-
-    @FXML
-    private Button previousButton;
-
-    @FXML
-    private Button nextButton;
-
-    @FXML
-    private Slider progressSlider;
-
-    @FXML
-    private Slider volumeSlider;
-
-    @FXML
-    private Label timeLabel;
-
-    @FXML
-    private Label durationLabel;
-
-    @FXML
-    private Label songTitleLabel;
-
-    @FXML
-    private Label songArtistLabel;
-
-    @FXML
-    private Label playModeLabel;
-
-    @FXML
-    private Canvas visualizerCanvas;
-
-    @FXML
-    private VBox playlistSidebar;
+    @FXML private BorderPane root;
+    @FXML private MenuBar menuBar;
+    @FXML private ListView<String> playlistListView;
+    @FXML private ListView<String> libraryListView;
+    @FXML private TextField searchField;
+    @FXML private Button playButton;
+    @FXML private Button pauseButton;
+    @FXML private Button stopButton;
+    @FXML private Button previousButton;
+    @FXML private Button nextButton;
+    @FXML private Slider progressSlider;
+    @FXML private Slider volumeSlider;
+    @FXML private Label timeLabel;
+    @FXML private Label durationLabel;
+    @FXML private Label songTitleLabel;
+    @FXML private Label songArtistLabel;
+    @FXML private Label playModeLabel;
+    @FXML private Canvas visualizerCanvas;
+    @FXML private VBox playlistSidebar;
 
     private Stage primaryStage;
     private AudioPlayerService playerService;
     private PlaylistService playlistService;
     private LibraryService libraryService;
     private AudioEffectService effectService;
+    private HistoryService historyService;
+    private PodcastService podcastService;
+    private CloudSyncService cloudSyncService;
     private ConfigManager config;
+    private ThemeManager themeManager;
+
+    private LyricsWindow lyricsWindow;
+    private MiniPlayer miniPlayer;
 
     private ObservableList<String> playlistItems;
     private ObservableList<String> libraryItems;
@@ -122,7 +82,14 @@ public class MainController {
         playlistService = PlaylistService.getInstance();
         libraryService = LibraryService.getInstance();
         effectService = AudioEffectService.getInstance();
+        historyService = HistoryService.getInstance();
+        podcastService = PodcastService.getInstance();
+        cloudSyncService = CloudSyncService.getInstance();
         config = ConfigManager.getInstance();
+        themeManager = ThemeManager.getInstance();
+
+        lyricsWindow = new LyricsWindow();
+        miniPlayer = new MiniPlayer();
 
         playlistItems = FXCollections.observableArrayList();
         libraryItems = FXCollections.observableArrayList();
@@ -154,6 +121,12 @@ public class MainController {
                 if (playerService.getDuration() > 0) {
                     progressSlider.setValue(newVal.doubleValue() / playerService.getDuration() * 100);
                 }
+                // Update lyrics time
+                lyricsWindow.updateTime(newVal.longValue());
+                // Update history play duration
+                if (playerService.getCurrentSong() != null && newVal.longValue() % 5000 < 200) {
+                    historyService.updatePlayDuration(playerService.getCurrentSong(), newVal.longValue());
+                }
             });
         });
 
@@ -169,6 +142,10 @@ public class MainController {
                     songTitleLabel.setText(newVal.getDisplayTitle());
                     songArtistLabel.setText(newVal.getArtist() != null ? newVal.getArtist() : "未知艺术家");
                     updatePlaylistSelection();
+                    // Add to history
+                    historyService.addToHistory(newVal);
+                    // Load lyrics
+                    lyricsWindow.loadLyrics(newVal);
                 } else {
                     songTitleLabel.setText("未播放");
                     songArtistLabel.setText("");
@@ -208,20 +185,15 @@ public class MainController {
             }
         });
 
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            updateLibraryView();
-        });
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> updateLibraryView());
     }
 
     private void setupVisualizer() {
-        visualizerTimeline = new Timeline(new KeyFrame(Duration.millis(50), e -> {
-            drawVisualizer();
-        }));
+        visualizerTimeline = new Timeline(new KeyFrame(Duration.millis(50), e -> drawVisualizer()));
         visualizerTimeline.setCycleCount(Timeline.INDEFINITE);
         if (config.isShowVisualization()) {
             visualizerTimeline.play();
         }
-
         visualizerCanvas.widthProperty().bind(root.widthProperty());
     }
 
@@ -229,103 +201,63 @@ public class MainController {
         GraphicsContext gc = visualizerCanvas.getGraphicsContext2D();
         double width = visualizerCanvas.getWidth();
         double height = visualizerCanvas.getHeight();
-
         gc.clearRect(0, 0, width, height);
-
-        if (!playerService.isPlaying()) {
-            return;
-        }
-
+        if (!playerService.isPlaying()) return;
         Random random = new Random();
         int barCount = 60;
-
         switch (visualizerMode) {
-            case 0:
-                drawBarsVisualizer(gc, width, height, barCount, random);
-                break;
-            case 1:
-                drawWaveVisualizer(gc, width, height, barCount, random);
-                break;
-            case 2:
-                drawCircleVisualizer(gc, width, height, barCount, random);
-                break;
-            case 3:
-                drawSpectrumVisualizer(gc, width, height, barCount, random);
-                break;
+            case 0: drawBarsVisualizer(gc, width, height, barCount, random); break;
+            case 1: drawWaveVisualizer(gc, width, height, barCount, random); break;
+            case 2: drawCircleVisualizer(gc, width, height, barCount, random); break;
+            case 3: drawSpectrumVisualizer(gc, width, height, barCount, random); break;
         }
     }
 
     private void drawBarsVisualizer(GraphicsContext gc, double width, double height, int barCount, Random random) {
         double barWidth = width / barCount;
-        double gap = 2;
-
         for (int i = 0; i < barCount; i++) {
             double value = random.nextDouble();
             double barHeight = value * height * 0.8;
-            double x = i * barWidth;
-            double y = height - barHeight;
-
-            Color color = Color.hsb(i * 6, 0.8, 0.8);
-            gc.setFill(color);
-            gc.fillRect(x + gap / 2, y, barWidth - gap, barHeight);
+            gc.setFill(Color.hsb(i * 6, 0.8, 0.8));
+            gc.fillRect(i * barWidth + 1, height - barHeight, barWidth - 2, barHeight);
         }
     }
 
     private void drawWaveVisualizer(GraphicsContext gc, double width, double height, int barCount, Random random) {
         gc.setStroke(Color.LIGHTBLUE);
         gc.setLineWidth(2);
-
         gc.beginPath();
         gc.moveTo(0, height / 2);
-
         for (int i = 0; i < barCount; i++) {
             double x = (i / (double) barCount) * width;
             double y = height / 2 + (random.nextDouble() - 0.5) * height * 0.6;
             gc.lineTo(x, y);
         }
-
         gc.stroke();
     }
 
     private void drawCircleVisualizer(GraphicsContext gc, double width, double height, int barCount, Random random) {
-        double centerX = width / 2;
-        double centerY = height / 2;
-        double baseRadius = Math.min(width, height) * 0.2;
-
+        double cx = width / 2, cy = height / 2;
+        double baseR = Math.min(width, height) * 0.2;
         for (int i = 0; i < barCount; i++) {
             double angle = (i / (double) barCount) * Math.PI * 2;
-            double value = random.nextDouble();
-            double radius = baseRadius + value * baseRadius * 1.5;
-
-            double x1 = centerX + Math.cos(angle) * baseRadius;
-            double y1 = centerY + Math.sin(angle) * baseRadius;
-            double x2 = centerX + Math.cos(angle) * radius;
-            double y2 = centerY + Math.sin(angle) * radius;
-
-            Color color = Color.hsb(i * 6, 0.8, 0.8);
-            gc.setStroke(color);
+            double r = baseR + random.nextDouble() * baseR * 1.5;
+            gc.setStroke(Color.hsb(i * 6, 0.8, 0.8));
             gc.setLineWidth(3);
-            gc.strokeLine(x1, y1, x2, y2);
+            gc.strokeLine(cx + Math.cos(angle) * baseR, cy + Math.sin(angle) * baseR,
+                          cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
         }
-
         gc.setFill(Color.PURPLE);
-        gc.fillOval(centerX - 10, centerY - 10, 20, 20);
+        gc.fillOval(cx - 10, cy - 10, 20, 20);
     }
 
     private void drawSpectrumVisualizer(GraphicsContext gc, double width, double height, int barCount, Random random) {
         double barWidth = width / barCount;
-        double gap = 1;
-
         for (int i = 0; i < barCount; i++) {
             double value = Math.pow(random.nextDouble(), 2);
             double barHeight = value * height * 0.9;
-            double x = i * barWidth;
-            double y = height - barHeight;
-
-            double alpha = value * 0.8 + 0.2;
-            Color color = Color.hsb(280 + value * 60, 0.9, 0.9, alpha);
-            gc.setFill(color);
-            gc.fillRect(x + gap / 2, y, barWidth - gap, barHeight);
+            gc.setFill(Color.hsb(280 + value * 60, 0.9, 0.9, value * 0.8 + 0.2));
+            gc.fillRect(i * barWidth + 0.5, height - barHeight, barWidth - 1, barHeight);
         }
     }
 
@@ -346,9 +278,7 @@ public class MainController {
         MenuItem removeFromPlaylist = new MenuItem("从播放列表移除");
         removeFromPlaylist.setOnAction(e -> {
             int index = playlistListView.getSelectionModel().getSelectedIndex();
-            if (index >= 0) {
-                playlistService.removeSong(index);
-            }
+            if (index >= 0) playlistService.removeSong(index);
         });
         MenuItem clearPlaylist = new MenuItem("清空播放列表");
         clearPlaylist.setOnAction(e -> {
@@ -386,30 +316,11 @@ public class MainController {
         }
     }
 
-    @FXML
-    public void onPlay() {
-        playerService.resume();
-    }
-
-    @FXML
-    public void onPause() {
-        playerService.pause();
-    }
-
-    @FXML
-    public void onStop() {
-        playerService.stop();
-    }
-
-    @FXML
-    public void onPrevious() {
-        playlistService.playPrevious();
-    }
-
-    @FXML
-    public void onNext() {
-        playlistService.playNext();
-    }
+    @FXML public void onPlay() { playerService.resume(); }
+    @FXML public void onPause() { playerService.pause(); }
+    @FXML public void onStop() { playerService.stop(); }
+    @FXML public void onPrevious() { playlistService.playPrevious(); }
+    @FXML public void onNext() { playlistService.playNext(); }
 
     @FXML
     public void onTogglePlayMode() {
@@ -461,7 +372,6 @@ public class MainController {
             BorderPane view = loader.load();
             EqualizerController controller = loader.getController();
             controller.setAudioEffectService(effectService);
-
             Stage stage = new Stage();
             stage.setTitle("均衡器");
             stage.setScene(new Scene(view, 600, 350));
@@ -480,7 +390,6 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/settings_view.fxml"));
             BorderPane view = loader.load();
             SettingsController controller = loader.getController();
-
             Stage stage = new Stage();
             stage.setTitle("设置");
             stage.setScene(new Scene(view, 700, 500));
@@ -519,7 +428,6 @@ public class MainController {
             BorderPane view = loader.load();
             SongInfoController controller = loader.getController();
             controller.setSong(song);
-
             Stage stage = new Stage();
             stage.setTitle("歌曲信息");
             stage.setScene(new Scene(view, 500, 400));
@@ -534,14 +442,10 @@ public class MainController {
 
     @FXML
     public void onAbout() {
-        DialogUtils.showInfo("关于音悦播放器", "音悦播放器 v1.0.0\n\n一款功能丰富的桌面音频播放软件\n支持 MP3、WAV、FLAC 等多种格式\n\n版权所有 (C) 2024 音悦科技");
+        DialogUtils.showInfo("关于音悦播放器", "音悦播放器 v1.0.0\n\n一款功能丰富的桌面音频播放软件\n支持 MP3、WAV、FLAC 等多种格式\n\n新功能:\n- 播放历史记录\n- 桌面歌词悬浮窗\n- 迷你播放器模式\n- 音频波形预览\n- 多主题切换\n- 播客/RSS订阅\n- 音频格式转换\n- 云同步备份\n\n版权所有 (C) 2024 音悦科技");
     }
 
-    @FXML
-    public void onExit() {
-        Platform.exit();
-        System.exit(0);
-    }
+    @FXML public void onExit() { Platform.exit(); System.exit(0); }
 
     @FXML
     public void onSleepTimer() {
@@ -550,7 +454,6 @@ public class MainController {
         dialog.setTitle("定时关闭");
         dialog.setHeaderText(null);
         dialog.setContentText("选择定时关闭时间：");
-
         dialog.showAndWait().ifPresent(choice -> {
             if (!choice.equals("取消")) {
                 int minutes = Integer.parseInt(choice.replace("分钟", ""));
@@ -563,9 +466,7 @@ public class MainController {
 
     private void startSleepTimer(long delay) {
         cancelSleepTimer();
-        sleepTimer = new Timeline(new KeyFrame(Duration.millis(delay), e -> {
-            Platform.exit();
-        }));
+        sleepTimer = new Timeline(new KeyFrame(Duration.millis(delay), e -> Platform.exit()));
         sleepTimer.setCycleCount(1);
         sleepTimer.play();
         DialogUtils.showInfo("定时关闭", String.format("播放器将在 %d 分钟后关闭", delay / 60000));
@@ -578,55 +479,194 @@ public class MainController {
         }
     }
 
-    @FXML
-    public void onChangeVisualizerMode() {
-        visualizerMode = (visualizerMode + 1) % 4;
-    }
+    @FXML public void onChangeVisualizerMode() { visualizerMode = (visualizerMode + 1) % 4; }
 
     @FXML
     public void onNavAlbums() {
         List<String> albums = libraryService.getAllAlbums();
-        if (albums.isEmpty()) {
-            DialogUtils.showInfo("提示", "暂无专辑信息");
-            return;
-        }
-
+        if (albums.isEmpty()) { DialogUtils.showInfo("提示", "暂无专辑信息"); return; }
         ChoiceDialog<String> dialog = new ChoiceDialog<>(albums.get(0), albums);
         dialog.setTitle("浏览专辑");
         dialog.setHeaderText(null);
         dialog.setContentText("选择专辑：");
-
         dialog.showAndWait().ifPresent(album -> {
             List<Song> songs = libraryService.getSongsByAlbum(album);
             playlistService.clearCurrentPlaylist();
             playlistService.addSongs(songs);
-            if (config.isAutoPlay()) {
-                playlistService.playSong(0);
-            }
+            if (config.isAutoPlay()) playlistService.playSong(0);
         });
     }
 
     @FXML
     public void onNavArtists() {
         List<String> artists = libraryService.getAllArtists();
-        if (artists.isEmpty()) {
-            DialogUtils.showInfo("提示", "暂无艺术家信息");
-            return;
-        }
-
+        if (artists.isEmpty()) { DialogUtils.showInfo("提示", "暂无艺术家信息"); return; }
         ChoiceDialog<String> dialog = new ChoiceDialog<>(artists.get(0), artists);
         dialog.setTitle("浏览艺术家");
         dialog.setHeaderText(null);
         dialog.setContentText("选择艺术家：");
-
         dialog.showAndWait().ifPresent(artist -> {
             List<Song> songs = libraryService.getSongsByArtist(artist);
             playlistService.clearCurrentPlaylist();
             playlistService.addSongs(songs);
-            if (config.isAutoPlay()) {
-                playlistService.playSong(0);
+            if (config.isAutoPlay()) playlistService.playSong(0);
+        });
+    }
+
+    // ===== New Features =====
+
+    @FXML
+    public void onShowHistory() {
+        List<HistoryEntry> history = historyService.getRecentHistory(50);
+        if (history.isEmpty()) {
+            DialogUtils.showInfo("播放历史", "暂无播放记录");
+            return;
+        }
+        ListView<String> listView = new ListView<>();
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for (HistoryEntry entry : history) {
+            items.add(entry.getDisplayText());
+        }
+        listView.setItems(items);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("播放历史");
+        dialog.setHeaderText("最近播放的 " + history.size() + " 首歌曲");
+        dialog.getDialogPane().setContent(listView);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setVisible(false);
+
+        listView.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                int index = listView.getSelectionModel().getSelectedIndex();
+                if (index >= 0 && index < history.size()) {
+                    HistoryEntry entry = history.get(index);
+                    Song song = new Song();
+                    song.setId(entry.getSongId());
+                    song.setTitle(entry.getTitle());
+                    song.setArtist(entry.getArtist());
+                    song.setFilePath(entry.getFilePath());
+                    playlistService.addSong(song);
+                    playlistService.playSong(playlistService.getCurrentPlaylist().getSongs().size() - 1);
+                    dialog.close();
+                }
             }
         });
+
+        dialog.showAndWait();
+    }
+
+    @FXML
+    public void onToggleLyrics() {
+        lyricsWindow.toggle();
+    }
+
+    @FXML
+    public void onToggleMiniPlayer() {
+        miniPlayer.toggle();
+    }
+
+    @FXML
+    public void onChangeTheme() {
+        Map<String, String> themes = themeManager.getAvailableThemes();
+        List<String> themeNames = new ArrayList<>(themes.keySet());
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(themeManager.getCurrentTheme(), themeNames);
+        dialog.setTitle("切换主题");
+        dialog.setHeaderText(null);
+        dialog.setContentText("选择主题：");
+        dialog.showAndWait().ifPresent(theme -> {
+            if (root.getScene() != null) {
+                themeManager.applyTheme(root.getScene(), theme);
+            }
+        });
+    }
+
+    @FXML
+    public void onShowPodcasts() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/podcast_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("播客管理");
+            stage.setScene(new Scene(view, 700, 500));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开播客窗口");
+        }
+    }
+
+    @FXML
+    public void onFormatConvert() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("音频文件", "*.wav", "*.au", "*.aiff"));
+        File file = chooser.showOpenDialog(primaryStage);
+        if (file == null) return;
+
+        FileChooser saveChooser = new FileChooser();
+        saveChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("WAV 文件", "*.wav"));
+        saveChooser.setInitialFileName(file.getName().replaceAll("\\.[^.]+$", ".wav"));
+        File saveFile = saveChooser.showSaveDialog(primaryStage);
+        if (saveFile == null) return;
+
+        javafx.concurrent.Task<Void> task = FormatConverter.convertAsync(
+            file.getAbsolutePath(), saveFile.getAbsolutePath(), "wav",
+            new FormatConverter.ConversionCallback() {
+                @Override public void onSuccess(String outputPath) {
+                    DialogUtils.showInfo("转换完成", "文件已保存到:\n" + outputPath);
+                }
+                @Override public void onError(String error) {
+                    DialogUtils.showError("转换失败", error);
+                }
+            }
+        );
+        new Thread(task).start();
+    }
+
+    @FXML
+    public void onExportConfig() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON 文件", "*.json"));
+        chooser.setInitialFileName("yinyue-backup.json");
+        File file = chooser.showSaveDialog(primaryStage);
+        if (file != null) {
+            if (cloudSyncService.exportConfig(file.getAbsolutePath())) {
+                DialogUtils.showInfo("导出成功", "配置已导出到:\n" + file.getAbsolutePath());
+            } else {
+                DialogUtils.showError("导出失败", "无法导出配置文件");
+            }
+        }
+    }
+
+    @FXML
+    public void onImportConfig() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON 文件", "*.json"));
+        File file = chooser.showOpenDialog(primaryStage);
+        if (file != null) {
+            if (DialogUtils.showConfirm("确认导入", "导入配置将覆盖当前设置，是否继续？")) {
+                if (cloudSyncService.importConfig(file.getAbsolutePath())) {
+                    DialogUtils.showInfo("导入成功", "配置已导入，请重启应用生效");
+                } else {
+                    DialogUtils.showError("导入失败", "无法导入配置文件");
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void onBackup() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("选择备份目录");
+        File dir = chooser.showDialog(primaryStage);
+        if (dir != null) {
+            if (cloudSyncService.backupAll(dir.getAbsolutePath())) {
+                DialogUtils.showInfo("备份成功", "配置已备份到:\n" + dir.getAbsolutePath());
+            } else {
+                DialogUtils.showError("备份失败", "无法备份配置文件");
+            }
+        }
     }
 
     public void setupGlobalShortcuts() {
@@ -652,6 +692,9 @@ public class MainController {
                     e.consume();
                     Stage stage = (Stage) scene.getWindow();
                     stage.setFullScreen(!stage.isFullScreen());
+                } else if (e.isControlDown() && e.getCode() == KeyCode.L) {
+                    e.consume();
+                    onToggleLyrics();
                 }
             });
         }
@@ -670,8 +713,5 @@ public class MainController {
         }
     }
 
-    @FXML
-    public void onTogglePlaylist() {
-        playlistSidebar.setVisible(!playlistSidebar.isVisible());
-    }
+    @FXML public void onTogglePlaylist() { playlistSidebar.setVisible(!playlistSidebar.isVisible()); }
 }
