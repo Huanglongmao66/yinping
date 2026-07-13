@@ -65,6 +65,11 @@ public class MainController {
     private CloudSyncService cloudSyncService;
     private ConfigManager config;
     private ThemeManager themeManager;
+    private SmartLibraryService smartLibraryService;
+    private RecommendationEngine recommendationEngine;
+    private RadioService radioService;
+    private RemoteControlServer remoteControlServer;
+    private AudioRecorder audioRecorder;
 
     private LyricsWindow lyricsWindow;
     private MiniPlayer miniPlayer;
@@ -87,6 +92,11 @@ public class MainController {
         cloudSyncService = CloudSyncService.getInstance();
         config = ConfigManager.getInstance();
         themeManager = ThemeManager.getInstance();
+        smartLibraryService = SmartLibraryService.getInstance();
+        recommendationEngine = RecommendationEngine.getInstance();
+        radioService = RadioService.getInstance();
+        remoteControlServer = RemoteControlServer.getInstance();
+        audioRecorder = new AudioRecorder();
 
         lyricsWindow = new LyricsWindow();
         miniPlayer = new MiniPlayer();
@@ -714,4 +724,198 @@ public class MainController {
     }
 
     @FXML public void onTogglePlaylist() { playlistSidebar.setVisible(!playlistSidebar.isVisible()); }
+
+    // ===== Advanced Features =====
+
+    @FXML
+    public void onSmartLibrary() {
+        List<String> options = List.of("按格式分类", "按文件大小分类", "按播放次数分类", "按目录分类", "最近添加", "最常播放", "最长歌曲");
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("按格式分类", options);
+        dialog.setTitle("智能分类");
+        dialog.setHeaderText(null);
+        dialog.setContentText("选择分类方式：");
+        dialog.showAndWait().ifPresent(choice -> {
+            List<Song> result = new ArrayList<>();
+            switch (choice) {
+                case "按格式分类":
+                    Map<String, List<Song>> byFormat = smartLibraryService.groupByGenre(libraryService);
+                    showSmartLibraryResult(byFormat);
+                    return;
+                case "按文件大小分类":
+                    Map<String, List<Song>> bySize = smartLibraryService.groupByFileSize(libraryService);
+                    showSmartLibraryResult(bySize);
+                    return;
+                case "按播放次数分类":
+                    Map<String, List<Song>> byCount = smartLibraryService.groupByPlayCount(libraryService);
+                    showSmartLibraryResult(byCount);
+                    return;
+                case "按目录分类":
+                    Map<String, List<Song>> byDir = smartLibraryService.groupByDirectory(libraryService);
+                    showSmartLibraryResult(byDir);
+                    return;
+                case "最近添加":
+                    result = smartLibraryService.getRecentlyAdded(libraryService, 30);
+                    break;
+                case "最常播放":
+                    result = smartLibraryService.getMostPlayed(libraryService, 30);
+                    break;
+                case "最长歌曲":
+                    result = smartLibraryService.getLongestSongs(libraryService, 30);
+                    break;
+            }
+            if (!result.isEmpty()) {
+                playlistService.clearCurrentPlaylist();
+                playlistService.addSongs(result);
+                updatePlaylistView();
+                DialogUtils.showInfo("分类结果", "已将 " + result.size() + " 首歌曲添加到播放列表");
+            }
+        });
+    }
+
+    private void showSmartLibraryResult(Map<String, List<Song>> groups) {
+        ListView<String> listView = new ListView<>();
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for (Map.Entry<String, List<Song>> entry : groups.entrySet()) {
+            items.add(entry.getKey() + " (" + entry.getValue().size() + " 首)");
+        }
+        listView.setItems(items);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("智能分类结果");
+        dialog.setHeaderText("共 " + groups.size() + " 个分类");
+        dialog.getDialogPane().setContent(listView);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+
+        listView.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                int index = listView.getSelectionModel().getSelectedIndex();
+                if (index >= 0) {
+                    String key = new ArrayList<>(groups.keySet()).get(index);
+                    List<Song> songs = groups.get(key);
+                    playlistService.clearCurrentPlaylist();
+                    playlistService.addSongs(songs);
+                    updatePlaylistView();
+                    dialog.close();
+                }
+            }
+        });
+        dialog.showAndWait();
+    }
+
+    @FXML
+    public void onRecommend() {
+        List<String> options = List.of("智能推荐", "发现新歌曲");
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("智能推荐", options);
+        dialog.setTitle("歌曲推荐");
+        dialog.setHeaderText(null);
+        dialog.setContentText("选择推荐模式：");
+        dialog.showAndWait().ifPresent(choice -> {
+            List<Song> songs;
+            if (choice.equals("智能推荐")) {
+                songs = recommendationEngine.recommend(libraryService, historyService, 20);
+            } else {
+                songs = recommendationEngine.discoverNew(libraryService, historyService, 20);
+            }
+            if (songs.isEmpty()) {
+                DialogUtils.showInfo("推荐结果", "暂无推荐歌曲");
+                return;
+            }
+            playlistService.clearCurrentPlaylist();
+            playlistService.addSongs(songs);
+            updatePlaylistView();
+            if (config.isAutoPlay()) playlistService.playSong(0);
+            DialogUtils.showInfo("推荐完成", "已添加 " + songs.size() + " 首推荐歌曲到播放列表");
+        });
+    }
+
+    @FXML
+    public void onRadio() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/radio_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("网络电台");
+            stage.setScene(new Scene(view, 600, 450));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开电台窗口");
+        }
+    }
+
+    @FXML
+    public void onRecord() {
+        if (audioRecorder.isRecording()) {
+            audioRecorder.stopRecording();
+            return;
+        }
+        if (!AudioRecorder.isMicrophoneAvailable()) {
+            DialogUtils.showError("错误", "未检测到麦克风设备");
+            return;
+        }
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("WAV 文件", "*.wav"));
+        chooser.setInitialFileName("recording_" + System.currentTimeMillis() + ".wav");
+        File file = chooser.showSaveDialog(primaryStage);
+        if (file == null) return;
+
+        audioRecorder.startRecording(file, new AudioRecorder.RecordingCallback() {
+            @Override public void onStarted() {
+                DialogUtils.showInfo("录音", "开始录音...");
+            }
+            @Override public void onStopped(File f) {
+                DialogUtils.showInfo("录音完成", "文件已保存到:\n" + f.getAbsolutePath());
+            }
+            @Override public void onError(String error) {
+                DialogUtils.showError("录音失败", error);
+            }
+        });
+    }
+
+    @FXML
+    public void onEditTags() {
+        Song song = playerService.getCurrentSong();
+        if (song == null) {
+            int index = libraryListView.getSelectionModel().getSelectedIndex();
+            if (index >= 0) {
+                song = libraryService.getSongs().get(index);
+            }
+        }
+        if (song == null) {
+            DialogUtils.showWarning("提示", "请先选择一首歌曲");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/tag_editor_view.fxml"));
+            BorderPane view = loader.load();
+            TagEditorController controller = loader.getController();
+            controller.setSong(song);
+            Stage stage = new Stage();
+            stage.setTitle("编辑标签 - " + song.getDisplayTitle());
+            stage.setScene(new Scene(view, 450, 320));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            controller.setStage(stage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开标签编辑器");
+        }
+    }
+
+    @FXML
+    public void onRemoteControl() {
+        if (remoteControlServer.isRunning()) {
+            remoteControlServer.stop();
+            DialogUtils.showInfo("远程控制", "远程控制服务器已停止");
+        } else {
+            try {
+                remoteControlServer.start();
+                String url = "http://localhost:" + remoteControlServer.getPort() + "/";
+                DialogUtils.showInfo("远程控制已启动", "请在浏览器中访问:\n" + url);
+            } catch (Exception e) {
+                DialogUtils.showError("启动失败", "无法启动远程控制服务器: " + e.getMessage());
+            }
+        }
+    }
 }

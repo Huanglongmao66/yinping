@@ -18,6 +18,7 @@
             </Menu>
             <Menu text="编辑">
                 <MenuItem text="歌曲信息..." onAction="#onSongInfo"/>
+                <MenuItem text="编辑标签..." onAction="#onEditTags"/>
                 <MenuItem text="设置..." onAction="#onSettings"/>
             </Menu>
             <Menu text="播放">
@@ -38,8 +39,16 @@
                 <MenuItem text="显示/隐藏播放列表" onAction="#onTogglePlaylist"/>
             </Menu>
             <Menu text="工具">
+                <MenuItem text="智能分类..." onAction="#onSmartLibrary"/>
+                <MenuItem text="智能推荐..." onAction="#onRecommend"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="网络电台..." onAction="#onRadio"/>
+                <MenuItem text="录音..." onAction="#onRecord"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="播客管理..." onAction="#onShowPodcasts"/>
                 <MenuItem text="音频格式转换..." onAction="#onFormatConvert"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="远程控制..." onAction="#onRemoteControl"/>
                 <MenuItem text="备份数据..." onAction="#onBackup"/>
             </Menu>
             <Menu text="帮助">

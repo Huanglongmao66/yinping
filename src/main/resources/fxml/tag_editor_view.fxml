@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.TagEditorController" styleClass="main-content">
+    <center>
+        <GridPane style="-fx-padding: 20;" hgap="10" vgap="10">
+            <Label text="标题:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="艺术家:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="artistField" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="专辑:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="albumField" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="曲目号:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="trackField" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="格式:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="genreField" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="年份:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <TextField fx:id="yearField" GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+        </GridPane>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button text="保存" onAction="#onSave"/>
+            <Button text="取消" onAction="#onCancel"/>
+        </HBox>
+    </bottom>
+</BorderPane>

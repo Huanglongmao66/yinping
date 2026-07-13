@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.RadioController" styleClass="main-content">
+    <top>
+        <HBox spacing="10" style="-fx-padding: 10;">
+            <TextField fx:id="nameField" promptText="电台名称" prefWidth="120"/>
+            <TextField fx:id="urlField" promptText="流媒体地址" HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="genreField" promptText="类型" prefWidth="80"/>
+            <Button text="添加" onAction="#onAdd"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox styleClass="main-content">
+            <Label fx:id="statusLabel" text="选择电台播放" styleClass="sidebar-title"/>
+            <ListView fx:id="stationListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button text="播放" onAction="#onPlay"/>
+            <Button text="停止" onAction="#onStop"/>
+            <Button text="删除" onAction="#onRemove"/>
+        </HBox>
+    </bottom>
+</BorderPane>
