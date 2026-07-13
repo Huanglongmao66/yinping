@@ -14,6 +14,8 @@
                 <MenuItem text="导入播放列表..." onAction="#onImportPlaylist"/>
                 <MenuItem text="导出播放列表..." onAction="#onExportPlaylist"/>
                 <SeparatorMenuItem/>
+                <MenuItem text="播放列表快照..." onAction="#onSnapshots"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="导出配置..." onAction="#onExportConfig"/>
                 <MenuItem text="导入配置..." onAction="#onImportConfig"/>
                 <SeparatorMenuItem/>
@@ -32,6 +34,7 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="变速播放..." onAction="#onPlaybackSpeed"/>
                 <MenuItem text="淡入淡出" onAction="#onCrossfade"/>
+                <MenuItem text="卡拉OK模式..." onAction="#onKaraoke"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="设置 A 点" onAction="#onSetAPoint"/>
                 <MenuItem text="设置 B 点" onAction="#onSetBPoint"/>
@@ -40,6 +43,8 @@
                 <MenuItem text="播放历史..." onAction="#onShowHistory"/>
                 <MenuItem text="迷你播放器" onAction="#onToggleMiniPlayer"/>
                 <MenuItem text="定时关闭..." onAction="#onSleepTimer"/>
+                <MenuItem text="音乐闹钟..." onAction="#onAlarm"/>
+                <SeparatorMenuItem/>
                 <MenuItem text="均衡器" onAction="#onEqualizer"/>
                 <MenuItem text="音效插件..." onAction="#onEffectPlugins"/>
             </Menu>
@@ -59,6 +64,7 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="音量均衡化..." onAction="#onReplayGain"/>
                 <MenuItem text="音频格式转换..." onAction="#onFormatConvert"/>
+                <MenuItem text="批量格式转换..." onAction="#onBatchConvert"/>
                 <MenuItem text="音频分割..." onAction="#onAudioSplit"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="播客管理..." onAction="#onShowPodcasts"/>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.KaraokeController" styleClass="main-content">
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <Label text="卡拉OK模式" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <CheckBox fx:id="karaokeCheck" text="启用人声消除"/>
+            <Separator/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="人声减弱程度:"/>
+                <Slider fx:id="reductionSlider" min="0" max="100" value="80" prefWidth="200"/>
+                <Label fx:id="reductionLabel" text="80%"/>
+            </HBox>
+            <Label text="提示: 通过削减中频段模拟人声消除效果" style="-fx-text-fill: #888; -fx-font-size: 11px;"/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button text="重置" onAction="#onReset"/>
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.SnapshotController" styleClass="main-content">
+    <top>
+        <HBox spacing="10" style="-fx-padding: 10;">
+            <Button text="保存快照" onAction="#onSave"/>
+            <Button fx:id="restoreButton" text="恢复" onAction="#onRestore" disable="true"/>
+            <Button fx:id="deleteButton" text="删除" onAction="#onDelete" disable="true"/>
+        </HBox>
+    </top>
+    <center>
+        <ListView fx:id="snapshotList"/>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER_RIGHT">
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.yinyue.player.controller.AlarmController" styleClass="main-content">
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <Label text="音乐闹钟" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="时间:"/>
+                <Spinner fx:id="hourSpinner" prefWidth="70"/>
+                <Label text=":"/>
+                <Spinner fx:id="minuteSpinner" prefWidth="70"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="播放列表:"/>
+                <ComboBox fx:id="playlistCombo" prefWidth="200"/>
+            </HBox>
+            <Separator/>
+            <Label fx:id="statusLabel" text="闹钟未设置" style="-fx-text-fill: #888;"/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button fx:id="setButton" text="设置" onAction="#onSet"/>
+            <Button fx:id="cancelButton" text="取消闹钟" onAction="#onCancel"/>
+            <Button text="关闭" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+</BorderPane>

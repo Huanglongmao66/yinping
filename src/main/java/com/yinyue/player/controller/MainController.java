@@ -1163,4 +1163,77 @@ public class MainController {
         int sec = (int) (ms / 1000);
         return String.format("%02d:%02d", sec / 60, sec % 60);
     }
+
+    // ===== V3 New Features =====
+
+    @FXML
+    public void onKaraoke() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/karaoke_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("卡拉OK模式");
+            stage.setScene(new Scene(view, 400, 280));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开卡拉OK窗口");
+        }
+    }
+
+    @FXML
+    public void onAlarm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/alarm_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("音乐闹钟");
+            stage.setScene(new Scene(view, 400, 320));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            loader.getController();
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开闹钟窗口");
+        }
+    }
+
+    @FXML
+    public void onSnapshots() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/snapshot_view.fxml"));
+            BorderPane view = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("播放列表快照");
+            stage.setScene(new Scene(view, 500, 400));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(primaryStage);
+            stage.show();
+        } catch (Exception e) {
+            DialogUtils.showError("错误", "无法打开快照窗口");
+        }
+    }
+
+    @FXML
+    public void onBatchConvert() {
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("音频文件", "*.wav", "*.mp3", "*.flac"));
+        List<File> files = chooser.showOpenMultipleDialog(primaryStage);
+        if (files == null || files.isEmpty()) return;
+
+        DirectoryChooser dirChooser = new DirectoryChooser();
+        dirChooser.setTitle("选择输出目录");
+        File outputDir = dirChooser.showDialog(primaryStage);
+        if (outputDir == null) return;
+
+        List<String> paths = new ArrayList<>();
+        for (File f : files) paths.add(f.getAbsolutePath());
+        BatchConverter converter = new BatchConverter();
+        converter.convertAll(paths, outputDir.getAbsolutePath(), "wav", new BatchConverter.ProgressCallback() {
+            @Override public void onProgress(int completed, int total, String currentFile) {}
+            @Override public void onError(String file, String error) {}
+        });
+        DialogUtils.showInfo("批量转换", "已开始转换 " + files.size() + " 个文件");
+    }
 }
